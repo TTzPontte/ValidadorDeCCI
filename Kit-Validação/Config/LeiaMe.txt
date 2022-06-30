@@ -1,0 +1,18 @@
+Para um bom funcionamento do VALIDADOR é necessário que instale: 
+
+	- Python3
+
+E as bibliotecas:(já esta com o comando para instalar)
+	- pip install openpyxl
+	- pip install pandas
+	- pip install sys
+	- pip install PyPDF2
+	- pip install regex
+	- pip install pywin32
+
+Caso já tenha tudo em sua máquina, para utilizar o Validador faremos assim:
+
+	1º - Cole uma cópia do Contrato_cliente.pdf e do Calculo_fluxo.xlsx dentro da pasta Validação.
+	2º - Clique no executável "Validar" (abrira o prompt de comandos, não feche).
+	3º - Após término aparecera na uma nova planilha na pasta.
+	4º - Abra a nova planilha e valide os resultados.

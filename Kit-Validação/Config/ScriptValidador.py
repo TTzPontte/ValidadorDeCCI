@@ -72,7 +72,7 @@ number_of_pages = read_pdf.getNumPages()
 
 #Extriar Texto Página 1 a 5
 text=''
-for i in range(0,4):
+for i in range(0,5):
     #Ler Página PDF
     pageObj = read_pdf.getPage(i)
     #Extrair Texto
@@ -82,6 +82,8 @@ for i in range(0,4):
 text = re.sub('\r', '', text) 
 text = re.sub('\n', '', text)
 text = re.sub('\s+', ' ', text)
+text = re.sub(' {2,}', ' ', text).strip(' ')
+text = re.sub(' :', ':', text)
 
 path2 = arquivoXLSX
 base = xl.load_workbook(path2, data_only=True)
@@ -94,7 +96,6 @@ if 'financiamento' in path:
     except:
         planilha = base["Sim_SAC"] # Abrir Aba
 
-    print('lendo planilha')
 
     #Pegar valores da planilha
     valorTotal = round(planilha.cell(row=6,column=4).value, 2)
@@ -134,7 +135,6 @@ if 'financiamento' in path:
     while ultimaParcela != None:
         cont = cont + 1
         ultimaParcela = planilha.cell(row=cont,column=3).value
-        print(type(ultimaParcela))
     ultimaParcela = planilha.cell(row=cont-1,column=3).value
     #ultimaParcela = datetime(ultimaParcela)
     ultimaParcela = ultimaParcela.strftime('%d/%m/%Y')
@@ -168,19 +168,20 @@ if 'financiamento' in path:
     #Criar Dicionario das duas Listas
     dict_keyValue = dict(zip(listaKey,listaValues))
 
+
+
     #Criar DF a partir do Dicionario PFD
     df_1 = pd.DataFrame([dict_keyValue])
 
-    listaDePara = {'valorTotal':'Valor do Financiamento: R$','tabela': 'Sistema de Amortização:','iofCorrigido': 'IOF: R$',
-                    'tag': 'Análise de Garantia: R$','registro': 'Despesas de Registro (estimado): R$',
+    listaDePara = {'valorTotal':'Valor do Financiamento: R$','tabela': 'Sistema de Amortização:','iofCorrigido':'IOF: R$',
+                    'tag': 'Abertura de Cadastro: R$','registro': 'Despesas de Registro (estimado): R$',
                     'valorLiquido': 'Valor Líquido a Liberar do Financiamento: R$','prazoMes': 'PRAZO DE AMORTIZAÇÃO:',
                     'taxa': 'exponencial ao mês, equivalente a de', 'primeiraParcela':'VALOR TOTAL DO PRIMEIRO ENCARGO, NESTA DATA: R$',
                     'valorImóvel':'leilão: R$','cet':'Custo Efetivo Total (CET):','prazoContrato': 'N.º DE PRESTAÇÕES:',
                     'ultimaParcela':'DATA DE VENCIMENTO DA ÚLTIMA PRESTAÇÃO:',
-                    'dataContrato': 'Data de Liberação dos Recursos:'
+                    'dataContrato': 'Data de Desembolso:'
                     }
 
-    #len(listaHE) # <--- Qtd de Itens na Lista
     listaKey = []
     listaValues = []
 
@@ -195,6 +196,10 @@ if 'financiamento' in path:
 
         #Ajustar Valores Númericos
         if '.' in valorExtraido:
+            valorExtraido = valorExtraido.replace(".", "")
+            valorExtraido = valorExtraido.replace(",", ".")
+
+        if ',' in valorExtraido:
             valorExtraido = valorExtraido.replace(".", "")
             valorExtraido = valorExtraido.replace(",", ".")
         
@@ -357,8 +362,8 @@ elif 'home equity' in path:
     df_1 = pd.DataFrame([dict_keyValue])
 
     listaDePara = {'valorTotal':'VALOR DO EMPRÉSTIMO: R$','tabela': 'SISTEMA DE AMORTIZAÇÃO:','iofCorrigido': 'IOF: R$',
-                    'tag': 'TARIFA DE ANÁLISE DE GARANTIAS: R$','registro': 'DESPESAS DE REGISTRO: R$',
-                    'valorLiquido': 'VALOR LÍQUIDO DO EMPRÉSTIMO (A-J-K-L-M-N): R$','prazoMes': 'PRAZO DE AMORTIZAÇÃO:',
+                    'tag': 'TARIFA DE ABERTURA DE CADASTRO: R$','registro': 'DESPESAS DE REGISTRO: R$',
+                    'valorLiquido': '-M-N): R$','prazoMes': 'PRAZO DE AMORTIZAÇÃO:',
                     'taxa': 'H.1. NOMINAL:', 'primeiraParcela':'T. VALOR TOTAL DO PRIMEIRO ENCARGO, NESTA DATA: R$',
                     'valorImóvel':'leilão: R$','cet':'CUSTO EFETIVO TOTAL (CET):','prazoContrato': 'N.º DE PRESTAÇÕES:',
                     'ultimaParcela':'DATA DO TÉRMINO DO PRAZO CONTRATUAL:',
@@ -399,7 +404,7 @@ elif 'home equity' in path:
     df_2 = pd.DataFrame([dict_keyValue])
 
 else:
-  print('ERRO')
+    print(' **---- ERRO NO DIRETÓRIO (não foi possivel saber se é FI ou HE) -----**')
 
 #Criar Colunas Dos Campos que estão faltando
 df_2.insert(len(listaKey),"carencia", [''])
@@ -417,6 +422,7 @@ df_2['valorTotal'] = pd.to_numeric(df_2['valorTotal'], errors= 'coerce')
 df_2['iofCorrigido'] = pd.to_numeric(df_2['iofCorrigido'], errors= 'coerce')
 df_2['tag'] = pd.to_numeric(df_2['tag'], errors= 'coerce')
 df_2['registro'] = pd.to_numeric(df_2['registro'], errors= 'coerce')
+df_1['registro'] = pd.to_numeric(df_2['registro'], errors= 'coerce')
 df_2['valorLiquido'] = pd.to_numeric(df_2['valorLiquido'], errors= 'coerce')
 df_2['prazoMes'] = pd.to_numeric(df_2['prazoMes'], errors= 'coerce')
 df_2['taxa'] = pd.to_numeric(df_2['taxa'], errors= 'coerce')
@@ -436,32 +442,6 @@ writer.close()
 #planilha.book = book
 
 ### Acionamento da Macro
-'''
-print("Inicio do Acionamento da Macro")
-sleep(2)
-xl2 = win32.gencache.EnsureDispatch("Excel.Application")
-xl2.Visible = True
-wb = xl2.WorkBooks.Open('G:\Drives compartilhados\Pontte\Operações\Automações\Projetos TESTES\Code de validação test\Central Formatação.xlsm')
-sleep(5)
-writeData = wb.Worksheets('Home')
-writeData.Cells(10,5).Value = pathTratado+"\Resultado.xlsx"
-
-print('Planilha carregada com sucesso!')
-
-#Rodar Macro
-xl2.Run("AddFormatacao")
-sleep(5)
-print('Macro rodada com sucesso!')
-
-
-# Salvar e Fechar
-wb.Save()
-wb.Close()
-xl2.Quit()
-print('Final do Acionamento da Macro')
-print('')
-print('----Script rodado com sucesso!----')
-'''
 
 #-- Abrir planilha
 wb = xw.Book("G:\Drives compartilhados\Pontte\Operações\Automações\Projetos TESTES\Code de validação test\Central Formatação.xlsm").sheets[0]

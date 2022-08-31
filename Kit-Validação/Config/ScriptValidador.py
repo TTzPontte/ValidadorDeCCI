@@ -47,7 +47,7 @@ palavraChave4 = 'Assinatura'
 palavraChave5 = 'Cálculo'
 palavraChave6 = 'Calculo'
 palavraChave7 = 'Kit'
-palavraChave8 = 'CALCULO'
+palavraChave8 = 'calculo'
 
 #Extensão do Arquvo
 xlsx = '.xlsx'

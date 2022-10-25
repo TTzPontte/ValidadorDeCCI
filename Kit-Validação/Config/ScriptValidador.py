@@ -12,6 +12,9 @@ from time import sleep
 import win32com.client as win32
 import xlwings as xw
 from datetime import datetime
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 file_name = os.path.basename(sys.path[0])
 pathBruto = sys.path[0]
@@ -57,8 +60,8 @@ arquivoPDF = caminhoArquivo(pathTratado, palavraChave1, palavraChave2, palavraCh
 arquivoXLSX = caminhoArquivo(pathTratado, palavraChave5, palavraChave6, palavraChave7, palavraChave8, xlsx)
 
 
-print("Caminho da planilha:", arquivoXLSX)
-print("\nCaminho do PDF:", arquivoPDF)
+# print("Caminho da planilha:", arquivoXLSX)
+# print("\nCaminho do PDF:", arquivoPDF)
 
 ### Abre o arquivo pdf e xlsx ###
 path = arquivoPDF
@@ -179,7 +182,7 @@ if 'financiamento' in path:
                     'taxa': 'exponencial ao mês, equivalente a de', 'primeiraParcela':'VALOR TOTAL DO PRIMEIRO ENCARGO, NESTA DATA: R$',
                     'valorImóvel':'leilão: R$','cet':'Custo Efetivo Total (CET):','prazoContrato': 'N.º DE PRESTAÇÕES:',
                     'ultimaParcela':'DATA DE VENCIMENTO DA ÚLTIMA PRESTAÇÃO:',
-                    'dataContrato': 'Data de Desembolso:'
+                    'dataContrato': 'Data de Desembolso:',
                     }
 
     listaKey = []
@@ -367,7 +370,7 @@ elif 'home equity' in path:
                     'taxa': 'H.1. NOMINAL:', 'primeiraParcela':'T. VALOR TOTAL DO PRIMEIRO ENCARGO, NESTA DATA: R$',
                     'valorImóvel':'leilão: R$','cet':'CUSTO EFETIVO TOTAL (CET):','prazoContrato': 'N.º DE PRESTAÇÕES:',
                     'ultimaParcela':'DATA DO TÉRMINO DO PRAZO CONTRATUAL:',
-                    'dataContrato': 'DATA DE DESEMBOLSO:'
+                    'dataContrato': 'DATA DE DESEMBOLSO:','saldoDevedor':'SALDO DEVEDOR DO IMÓVEL: R$','valorDisponivel':'(O-P): R$'
                     }
 
     #len(listaHE) # <--- Qtd de Itens na Lista
@@ -381,7 +384,7 @@ elif 'home equity' in path:
         valorExtraido = text[finalFrase:proximoEspaco]
 
         #Ajustar Valores Númericos
-        if '.' in valorExtraido:
+        if '.' in valorExtraido or ',' in valorExtraido:
             valorExtraido = valorExtraido.replace(".", "")
             valorExtraido = valorExtraido.replace(",", ".")
         
@@ -402,13 +405,28 @@ elif 'home equity' in path:
 
     #Criar DF a partir do Dicionario
     df_2 = pd.DataFrame([dict_keyValue])
-
+    df_2['valorDisponivel'] = float(df_2['valorDisponivel'])
+    df_2['saldoDevedor'] = float(df_2['saldoDevedor'])
+    df_2['valorLiquido'] = float(df_2['valorLiquido'])
+    valid = df_2['valorLiquido']-df_2['saldoDevedor']
+    valid2 = df_2['valorDisponivel']
+    
 else:
     print(' **---- ERRO NO DIRETÓRIO (não foi possivel saber se é FI ou HE) -----**')
 
 #Criar Colunas Dos Campos que estão faltando
 df_2.insert(len(listaKey),"carencia", [''])
 df_2.insert(len(listaKey)+1,"diaPagto", [''])
+
+if valid.all() == valid2.all():
+        print("********FOOOI*********")
+        del df_2['saldoDevedor']
+        del df_2['valorDisponivel']
+else:
+    for loopera in range(0,10):
+        print('@-'*20)
+        print('O SALDO DEVEDOR MENOS O VALOR LIQUIDO NÃO ESTA BATENDO COM O VALOR DIPONIVEL')
+        print('@-'*20)
 
 #Inserir Valores Nas Colunas
 df_2['carencia'] = df_2['prazoMes'].astype(float) - df_2['prazoContrato'].astype(float) 

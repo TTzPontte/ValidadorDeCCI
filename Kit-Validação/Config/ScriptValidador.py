@@ -101,32 +101,32 @@ if 'financiamento' in path:
 
 
     #Pegar valores da planilha
-    valorTotal = round(planilha.cell(row=6,column=4).value, 2)
-    tabela = planilha.cell(row=7,column=4).value.upper()
+    valorTotal = round(planilha.cell(row=2,column=3).value, 2)
+    tabela = planilha.cell(row=3,column=3).value.upper()
     try:
-        iofCorrigido = round(planilha.cell(row=8,column=4).value, 2)
+        iofCorrigido = round(planilha.cell(row=4,column=3).value, 2)
     except:
         iofCorrigido = 0
-    tag = round(planilha.cell(row=9,column=4).value, 2)
-    registro = round(planilha.cell(row=10,column=4).value, 2)
-    valorLiquido = round(planilha.cell(row=11,column=4).value, 2)
-    prazoMes = planilha.cell(row=12,column=4).value
-    taxa = planilha.cell(row=13,column=4).value
+    tag = round(planilha.cell(row=5,column=3).value, 2)
+    registro = round(planilha.cell(row=6,column=3).value, 2)
+    valorLiquido = round(planilha.cell(row=7,column=3).value, 2)
+    prazoMes = planilha.cell(row=8,column=3).value
+    taxa = planilha.cell(row=9,column=3).value
     taxa = round((((taxa + 1) ** (12/1))-1), 4) # Passando a taxa de a.a para a.m
-    primeiraParcela = round(planilha.cell(row=14,column=4).value, 2)
-    valorImóvel = round(planilha.cell(row=15,column=4).value, 2)
-    carencia = planilha.cell(row=16,column=4).value
-    mesNpaga = planilha.cell(row=17,column=4).value
-    cet = round(planilha.cell(row=18,column=4).value, 4)
+    primeiraParcela = round(planilha.cell(row=10,column=3).value, 2)
+    valorImóvel = round(planilha.cell(row=11,column=3).value, 2)
+    carencia = planilha.cell(row=12,column=3).value
+    mesNpaga = planilha.cell(row=13,column=3).value
+    cet = round(planilha.cell(row=14,column=3).value, 4)
     prazoContrato = prazoMes - carencia
     try:
-        iofTotal = round(planilha.cell(row=18,column=17).value, 2)
+        iofTotal = round(planilha.cell(row=15,column=18).value, 2)
     except:
         iofTotal = 0
-    diaPagto = planilha.cell(row=3,column=11).value
-    dataContrato = planilha.cell(row=2,column=11).value
+    diaPagto = planilha.cell(row=3,column=6).value
+    dataContrato = planilha.cell(row=2,column=6).value
     dataContrato = dataContrato.strftime('%d/%m/%Y')
-    dataContratoTab = planilha.cell(row=21,column=3).value
+    dataContratoTab = planilha.cell(row=18,column=2).value
     dataContratoTab = dataContratoTab.strftime('%d/%m/%Y')
     # Validando a data do contrato
     if dataContrato != dataContratoTab:
@@ -134,16 +134,16 @@ if 'financiamento' in path:
 
     # Validando a data da ultima parcela 
     cont = 25
-    ultimaParcela = planilha.cell(row=cont,column=3).value
+    ultimaParcela = planilha.cell(row=cont,column=2).value
     while ultimaParcela != None:
         cont = cont + 1
-        ultimaParcela = planilha.cell(row=cont,column=3).value
-    ultimaParcela = planilha.cell(row=cont-1,column=3).value
+        ultimaParcela = planilha.cell(row=cont,column=2).value
+    ultimaParcela = planilha.cell(row=cont-1,column=2).value
     #ultimaParcela = datetime(ultimaParcela)
     ultimaParcela = ultimaParcela.strftime('%d/%m/%Y')
     # Validando Amortização com o campo Tabela
-    amortizacaoRef1 = planilha.cell(row=cont-1, column=4).value
-    amortizacaoRef = planilha.cell(row=cont-2, column=4).value
+    amortizacaoRef1 = planilha.cell(row=cont-1, column=3).value
+    amortizacaoRef = planilha.cell(row=cont-2, column=3).value
     if amortizacaoRef1 == amortizacaoRef:
         amortizacao = 'SAC'
     else:
@@ -417,16 +417,16 @@ else:
 #Criar Colunas Dos Campos que estão faltando
 df_2.insert(len(listaKey),"carencia", [''])
 df_2.insert(len(listaKey)+1,"diaPagto", [''])
-
-if valid.all() == valid2.all():
-        print("********FOOOI*********")
-        del df_2['saldoDevedor']
-        del df_2['valorDisponivel']
-else:
-    for loopera in range(0,10):
-        print('@-'*20)
-        print('O SALDO DEVEDOR MENOS O VALOR LIQUIDO NÃO ESTA BATENDO COM O VALOR DIPONIVEL')
-        print('@-'*20)
+if produto == 'HE':
+    if valid.all() == valid2.all():
+            print("********FOOOI*********")
+            del df_2['saldoDevedor']
+            del df_2['valorDisponivel']
+    else:
+        for loopera in range(0,10):
+            print('@-'*20)
+            print('O SALDO DEVEDOR MENOS O VALOR LIQUIDO NÃO ESTA BATENDO COM O VALOR DIPONIVEL')
+            print('@-'*20)
 
 #Inserir Valores Nas Colunas
 df_2['carencia'] = df_2['prazoMes'].astype(float) - df_2['prazoContrato'].astype(float) 
